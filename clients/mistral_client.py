@@ -1,10 +1,11 @@
 import json
+from typing import Optional
 
 from mistralai import Mistral
 from pydantic import BaseModel, SecretStr
-from typing import Optional
 
 from models import Category
+
 
 class LLMCategoryResponse(BaseModel):
 	category_id: str

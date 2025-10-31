@@ -1,23 +1,20 @@
 from functools import reduce
-import os
-from dateutil import parser
 from typing import Optional
 
 import duckdb
-from dotenv import load_dotenv
 import polars as pl
-from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
+from dateutil import parser
+from dotenv import load_dotenv
 from loguru import logger
+from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 
-from config import settings
-from models import Category, Order
-from order_categorizer import OrderCategorizer
 from clients.mistral_client import MistralClient
 from clients.ynab_client import YNABClient
+from config import settings
+from models import Category, Order
+from services.order_categorizer import OrderCategorizer
 
 load_dotenv()
-
-print(os.environ.items())
 
 JOB_NAME = "YNAB Transaction Categorization"
 

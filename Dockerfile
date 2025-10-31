@@ -1,22 +1,32 @@
-FROM python:3.12-slim-trixie
+FROM python:3.13-slim AS builder
+
+ENV PYTHONUNBUFFERED=1
 
 # The installer requires curl (and certificates) to download the release archive
-RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
-
-# Download the latest installer
-ADD https://astral.sh/uv/install.sh /uv-installer.sh
-
-# Run the installer then remove it
-RUN sh /uv-installer.sh && rm /uv-installer.sh
-
-# Ensure the installed binary is on the `PATH`
-ENV PATH="/root/.local/bin/:$PATH"
-
-# Copy the project into the image
-ADD . /app
+COPY --from=ghcr.io/astral-sh/uv:0.8 /uv /uvx /bin/
 
 # Sync the project into a new environment, asserting the lockfile is up to date
 WORKDIR /app
-RUN uv sync --locked
 
-CMD ["uv", "run", "index.py"]
+# Copy dependency file(s) first for caching
+COPY pyproject.toml uv.lock ./
+
+# Install dependencies in a separate layer
+RUN uv sync --frozen
+
+# Copy application source code
+COPY . .
+
+# ---------- Stage 2: Runtime ----------
+FROM python:3.13-slim AS runtime
+
+# Security: create a non-root user
+RUN useradd --create-home appuser
+USER appuser
+
+WORKDIR /app
+
+# Copy dependencies and source code from builder
+COPY --from=builder /app /app
+
+CMD [".venv/bin/python", "main.py"]

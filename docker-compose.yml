@@ -1,11 +1,11 @@
 version: "3.9"
 
 services:
-  pushgateway:
+  pushgateway1:
     image: prom/pushgateway:latest
-    container_name: pushgateway
+    container_name: pushgateway1
     ports:
-      - "9091:9091"
+      - 9091:9091
     networks:
       - monitoring
 
@@ -13,13 +13,39 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: financial-transaction-categorizer
+    container_name: general-life-tasks
     depends_on:
+      - db
       - pushgateway
     environment:
-      PUSHGATEWAY_URL: http://pushgateway:9091
+      PUSHGATEWAY_URL: http://pushgateway1:9091
     networks:
       - monitoring
+
+  db:
+    image: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+    ports:
+      - 5432:5432
+    volumes:
+      - general-life-tasks-db:/var/lib/postgresql/data
+    networks:
+      - monitoring
+
+  adminer_container:
+    image: adminer:latest
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    ports:
+      - 8080:8080
+    networks:
+      - monitoring
+
+volumes:
+  general-life-tasks-db:
 
 networks:
   monitoring:

@@ -1,6 +1,6 @@
-from models import Category
+from clients.mistral_client import MistralClient
 
-from mistral_client import MistralClient
+from models import Category
 
 class OrderCategorizer:
     def __init__(self, llm_client: MistralClient, categories: list[Category]):
@@ -14,6 +14,4 @@ class OrderCategorizer:
 
         print(response)
         return response
-
-        # if response.confidence_level >= self.confidence_threshold:
             

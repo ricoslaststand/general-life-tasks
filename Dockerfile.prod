@@ -1,0 +1,45 @@
+# # ============================
+# # Stage 1: Build dependencies
+# # ============================
+# FROM python:3.12-slim AS builder
+
+# # Install system dependencies required for uv and building packages
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#     curl build-essential \
+#  && rm -rf /var/lib/apt/lists/*
+
+# # Install uv
+# RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# # Set up working directory
+# WORKDIR /app
+
+# # Copy dependency files first for better caching
+# COPY pyproject.toml uv.lock ./
+
+# # Create a virtual environment using uv
+# RUN ~/.cargo/bin/uv venv /app/.venv \
+#  && ~/.cargo/bin/uv sync --frozen --no-dev
+
+# # ============================
+# # Stage 2: Runtime
+# # ============================
+# FROM python:3.12-slim AS runtime
+
+# # Copy the virtual environment from builder
+# COPY --from=builder /app/.venv /app/.venv
+
+# # Ensure the venv’s Python is used by default
+# ENV PATH="/app/.venv/bin:$PATH"
+
+# WORKDIR /app
+
+# # Copy only source code (after dependencies)
+# COPY . .
+
+# # Use non-root user for security
+# RUN useradd -m appuser
+# USER appuser
+
+# # Default command
+# CMD ["python", "main.py"]

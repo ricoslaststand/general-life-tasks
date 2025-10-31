@@ -1,5 +1,6 @@
 import ynab
 
+
 class YNABClient:
     def __init__(self, access_token: str):
         self.configuration = ynab.Configuration(
@@ -60,3 +61,5 @@ class YNABClient:
                 return response.data
             except Exception as e:
                 print(e)
+
+    def get_transactions_by_payee_id(self, payee_id)
